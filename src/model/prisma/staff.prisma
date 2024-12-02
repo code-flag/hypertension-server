@@ -1,0 +1,22 @@
+model Staff {
+  staff_id     Int      @id @default(autoincrement())
+  name         String   @db.VarChar(100)
+  email        String   @unique @db.VarChar(100)
+  phone_number String   @unique @db.VarChar(15)
+  role         Role
+  access_level AccessLevel
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+}
+
+enum Role {
+  admin
+  facility_agent
+  ppmv_agent
+}
+
+enum AccessLevel {
+  full_access
+  limited_access
+  read_only
+}
