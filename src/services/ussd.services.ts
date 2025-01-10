@@ -1,7 +1,7 @@
 
 import { PrismaClient } from "@prisma/client";
+import { prisma } from './../config/database';
 
-const prisma = new PrismaClient();
 
 export const checkIfClientExists = async (phoneNumber: string) => {
   const client = await prisma.screening.findUnique({

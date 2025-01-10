@@ -1,0 +1,26 @@
+model Incentives {
+  id              Int                       @id @default(autoincrement())
+  desc           String
+  paymentType     EPaymentType              @default(flat)
+  incentiveType   EIncentiveType            
+  beneficiaryType EIncentiveBeneficiaryType
+  amount          Decimal                   @db.Decimal(10, 2)
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+}
+
+enum EIncentiveType {
+  limited
+  full
+  screeningIncentive
+  clientIncentive
+}
+
+enum EIncentiveBeneficiaryType {
+  client
+  ppmv
+}
+
+enum EPaymentType {
+  flat
+}

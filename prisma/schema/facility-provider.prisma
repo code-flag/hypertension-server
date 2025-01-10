@@ -1,0 +1,8 @@
+model FacilityProvider {
+  id          Int    @id @default(autoincrement())
+  phoneNumber String @unique @db.VarChar(15)
+  name        String @db.VarChar(100)
+  state       String
+
+  Screening Screening[]
+}

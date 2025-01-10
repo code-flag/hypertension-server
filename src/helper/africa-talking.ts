@@ -21,12 +21,12 @@ class AfricasTalking {
       };
 
     creditAirtime = async (to: string, from: string, message: string) => {
-        const sms = africastalkingClient.SMS({}) ;
-        await sms.send({
-          to,
-          from,
-          message,
-        });
+        // const sms = africastalkingClient.SMS({}) ;
+        // await sms.send({
+        //   to,
+        //   from,
+        //   message,
+        // });
       };
 
 }

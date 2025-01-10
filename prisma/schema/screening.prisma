@@ -1,0 +1,35 @@
+model Screening {
+  id                     Int               @id @default(autoincrement())
+  phoneNumber            String            @unique @db.VarChar(15)
+  age                    Int
+  gender                 Gender
+  verificationCode       String            @db.VarChar(10)
+  confirmationCode       String?           @db.VarChar(10)
+  confirmationResult     ScreeningResult   @default(pending)
+  screeningResult        ScreeningResult   @default(pending)
+  clientRewardStatus     Boolean           @default(false)
+  ppmvRewardStatus       Boolean           @default(false)
+  ppmvPhoneNumber        String
+  state                  String            @db.VarChar(20) //added for the sake of data analysis
+  lga                    String            @db.VarChar(30) //added for the sake of data analysis
+  location               String            @unique @db.VarChar(30) //added for the sake of data analysis
+  ppmvAgent              PpmvAgent         @relation(fields: [ppmvPhoneNumber], references: [phoneNumber])
+  facilityProviderNumber String?
+  facilityProvider       FacilityProvider? @relation(fields: [facilityProviderNumber], references: [phoneNumber])
+  facilityCode           String?
+  facility               Facility?         @relation(fields: [facilityCode], references: [code])
+  transactions           Reward[]
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+}
+
+enum ScreeningResult {
+  negative
+  positive
+  pending
+}
+
+enum Gender {
+  male
+  female
+}

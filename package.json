@@ -13,8 +13,10 @@
     "build-start": "tsc -p . && node ./build/server.js",
     "build-watch": "tsc -p . -w",
     "tsc": "npx tsc --watch",
-    "prisma": "npx prisma generate",
-    "prisma-migrate": "npx prisma migrate dev --name init"
+    "prisma-reset": "npx prisma migrate reset",
+    "prisma-generate": "npx prisma generate",
+    "prisma-migrate": "npx prisma migrate dev --name",
+    "prisma-migrate-prod": "npx prisma migrate deploy --name"
   },
   "keywords": [
     "hypertension",
@@ -33,6 +35,7 @@
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "crypto-js": "^4.1.1",
+    "date-fns": "^4.1.0",
     "debug": "^4.3.4",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",

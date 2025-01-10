@@ -1,0 +1,18 @@
+model Reward {
+  id   Int           @id @default(autoincrement())
+  screeningId   Int
+  screening     Screening     @relation(fields: [screeningId], references: [id], onDelete: Cascade)
+  recipientNumber   Int
+  recipientType ERecipientType
+  amount        Decimal       @db.Decimal(10, 2)
+  incentiveType EIncentiveType
+  ppmvAgent     PpmvAgent[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+enum ERecipientType {
+  ppmv
+  client
+}
+

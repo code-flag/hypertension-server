@@ -10,21 +10,8 @@ import {
 } from "../helper/error";
 import CryptoJS from "crypto-js";
 import dotEnv from "dotenv";
-import { Customer, CooperativeStaff, Cooperative } from "../model/index.schema";
-dotEnv.config();
 
-export const verifyCooperativeAccess = asyncWrapper(
-  async (request: any, response: any, next: any) => {
-    const getCooperative = await Cooperative.findOne({
-      _id: request.headers?.cooperativeid,
-    });
-    if (!getCooperative) {
-      next(new ForbiddenError("Access Denied! Cooperative not found"));
-    }
-    request.cooperative = getCooperative;
-    next();
-  }
-);
+dotEnv.config();
 
 export const verifyToken = asyncWrapper(
   async (request: any, response: any, next: any) => {
@@ -54,54 +41,21 @@ export const verifyToken = asyncWrapper(
 
         // value 2 is for organization
         if (decoded.type === "customer") {
-          const customer: any = await Customer.findById(
-            decoded?.id,
-            "+password"
-          );
-          if (!customer) {
-            return next(new UnauthorizedError("Invalid customer token."));
-          }
-          request.customer = customer;
-          request.token = {
-            type: decoded.type,
-            role: customer?.role ?? "customer",
-            accessLevel: "customer",
-          };
+          // const customer: any = await Customer.findById(
+          //   decoded?.id,
+          //   "+password"
+          // );
+          // if (!customer) {
+          //   return next(new UnauthorizedError("Invalid customer token."));
+          // }
+          // request.customer = customer;
+          // request.token = {
+          //   type: decoded.type,
+          //   role: customer?.role ?? "customer",
+          //   accessLevel: "customer",
+          // };
         }
-        // value 3 is for cooperativeStaff
-        if (decoded.type === "cooperativeStaff") {
-          const cooperativeStaff: any = await CooperativeStaff.findById(
-            decoded?.id,
-            "+password"
-          );
-          if (!cooperativeStaff) {
-            return next(
-              new UnauthorizedError("Invalid cooperativeStaff token.")
-            );
-          }
-          request.cooperativeStaff = cooperativeStaff;
-          request.token = {
-            type: decoded.type,
-            role: cooperativeStaff?.role ?? "cooperativeStaff",
-            accessLevel: cooperativeStaff.accessLevel,
-          };
-        }
-        // value 4 is for admin
-        if (decoded.type === "cooperative") {
-          const cooperativeStaff: any = await Cooperative.findById(
-            decoded?.id,
-            "+password"
-          );
-          if (!cooperativeStaff) {
-            return next(new UnauthorizedError("Invalid token."));
-          }
-          request.cooperativeStaff = cooperativeStaff;
-          request.token = {
-            type: decoded.type,
-            role: cooperativeStaff?.role,
-            accessLevel: cooperativeStaff.accessLevel,
-          };
-        }
+       
         return next();
       }
     );

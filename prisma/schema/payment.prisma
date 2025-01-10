@@ -1,0 +1,18 @@
+model Payment {
+  id   Int           @id @default(autoincrement())
+  state String
+  ppmvNumber String
+  ppmvAgent     PpmvAgent[]
+  status        EStatus @default(pending)
+  amount Int
+  authorizationLevel Int
+  authorizedBy Json[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+enum EStatus {
+  pending
+  paid
+  declined
+}

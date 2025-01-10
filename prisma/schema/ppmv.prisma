@@ -1,0 +1,13 @@
+model PpmvAgent {
+  id                     Int            @id @default(autoincrement())
+  phoneNumber            String         @unique @db.VarChar(15)
+  name                   String         @db.VarChar(35)
+  state                  String         @db.VarChar(20)
+  totalIncentiveReceived Int            @default(0)
+  activeIncentiveBalance Int            @default(0)
+  screenings             Screening[]
+  transactions           Reward[]
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+  Payment Payment[]
+}

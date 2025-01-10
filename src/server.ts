@@ -29,44 +29,11 @@ const io: any = new Server(server, {
 /**
  * Handles all user socket events
  */
-const notification: any = io.of("/notification");
-const deal: any = io.of("/deal");
+// const notification: any = io.of("/notification");
+// const deal: any = io.of("/deal");
 
-const { ExpressPeerServer } = require("peer");
-const opinions = {
-  debug: true,
-}
-
-app.use("/peerjs", ExpressPeerServer(server, opinions));
 app.use(express.static("public"));
 
-app.locals.classTitle = "JSS3/Mathematics wk2";
-
-/** =============================================================================================================== 
- *  Video Streaming API
- * ================================================================================================================
-*/
-const { v4: uuidv4 } = require("uuid");
-
-app.get("/class-session", (req: any, res: any) => {
-  res.redirect(`/class-session/${uuidv4()}`);
-});
-
-app.get("/class-session/:room", (req: any, res: any) => {
-  res.render("room", { roomId: req.params.room });
-});
-
-io.on("connection", (socket: any) => {
-  socket.on("join-room", (roomId: string, userId: string, userName: string) => {
-    socket.join(roomId);
-    setTimeout(()=>{
-      socket.to(roomId).broadcast.emit("user-connected", userId);
-    }, 1000);
-    socket.on("message", (message: any) => {
-      io.to(roomId).emit("createMessage", message, userName);
-    });
-  });
-});
 
 /** ================================== Invalid route response ================================ */
 

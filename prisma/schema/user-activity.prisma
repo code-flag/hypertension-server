@@ -1,0 +1,8 @@
+model UserActivity {
+    id        Int      @id @default(autoincrement())
+    userId   String
+    desc      String
+    action    String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

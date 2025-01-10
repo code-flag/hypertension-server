@@ -1,7 +1,0 @@
-model Region {
-  region_id   Int     @id @default(autoincrement())
-  name        String  @db.VarChar(100)
-  description String?
-  ppmvAgents  PpmvAgent[]
-  facilityAgents FacilityAgent[]
-}

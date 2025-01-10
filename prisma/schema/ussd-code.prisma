@@ -1,0 +1,15 @@
+model UssdCode {
+    id        Int      @id @default(autoincrement())
+    code      String
+    desc      String
+    target    ETarget
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+
+enum ETarget {
+    client
+    ppmv
+    facility
+}
