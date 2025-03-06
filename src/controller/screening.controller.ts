@@ -154,15 +154,19 @@ export const getScreeningByPhone = async (req: Request, res: Response) => {
 
 // Get All Screenings
 export const getAllScreenings = async (req: Request, res: Response) => {
-    const { limit = 10, offset = 0, region, date, ppmvCode, facilityCode, status, gender, age } = req.query;
+    const { limit = 10, offset = 0, region, date, ppmvCode, facilityCode, facilityProviderCode, screeningResult, confirmationResult, phoneNumber, status, gender, age } = req.query;
 
     let query: any = {};
     if (region) query.region = region;
-    if (date) query.date = new Date(date as string);
+    // if (date) query.date = new Date(date as string);
     if (ppmvCode) query.ppmvCode = ppmvCode;
     if (facilityCode) query.facilityCode = facilityCode;
+    if (facilityProviderCode) query.facilityCode = facilityCode;
     if (status) query.status = status;
     if (gender) query.gender = gender;
+    if (confirmationResult) query.confirmationResult = confirmationResult;
+    if (screeningResult) query.screeningResult = screeningResult;
+    if (phoneNumber) query.phoneNumber = phoneNumber;
     if (age) query.age = parseInt(age as string);
 
     const screenings = await prisma.screening.findMany({
@@ -174,6 +178,88 @@ export const getAllScreenings = async (req: Request, res: Response) => {
 
     returnMsg(res, screenings, "Screenings retrieved successfully.");
 };
+
+
+ const aggregateScreenings = async (filter: { 
+  ppmvCode?: boolean; 
+  facilityCode?: boolean; 
+  facilityProviderCode?: boolean; 
+  date?: string; 
+  month?: string;
+}) => {
+  // Determine the date range
+  let dateFilter: any = {};
+  if (filter.date) {
+    // If a specific date is provided
+    dateFilter = { 
+      gte: new Date(filter.date), 
+      lt: new Date(`${filter.date}T23:59:59.999Z`) 
+    };
+  } else if (filter.month) {
+    // If a specific month is provided
+    dateFilter = { 
+      gte: new Date(`${filter.month}-01`), 
+      lt: new Date(`${filter.month}-31T23:59:59.999Z`) 
+    };
+  } else {
+    // Default to the current month
+    const currentDate = new Date();
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+    dateFilter = { 
+      gte: new Date(`${year}-${month}-01`), 
+      lt: new Date(`${year}-${month}-31T23:59:59.999Z`) 
+    };
+  }
+
+  // Determine the grouping field
+  let groupByField: string | null = null;
+  if (filter.ppmvCode) groupByField = 'ppmvCode';
+  else if (filter.facilityCode) groupByField = 'facilityCode';
+  else if (filter.facilityProviderCode) groupByField = 'facilityProviderCode';
+
+  if (!groupByField) {
+    throw new Error("You must specify either 'ppmvCode', 'facilityCode', or 'facilityProviderCode' as a parameter.");
+  }
+
+  return prisma.screening.groupBy({
+    by: [groupByField], // Group by the selected field
+    _count: { _all: true }, // Count occurrences per unique value
+    where: {
+      createdAt: dateFilter, // Apply the date or month filter
+    },
+  });
+};
+
+// Aggregate each unique ppmvCode for the current month:
+// const result = await aggregateScreenings({ ppmvCode: true });
+// Aggregate each unique facilityCode for a specific month:
+// const result = await aggregateScreenings({ facilityCode: true, month: '2024-02' });
+// Aggregate each unique facilityProviderCode for a specific date:
+// const result = await aggregateScreenings({ facilityProviderCode: true, date: '2024-02-10' });
+
+export const aggregateByUserCode = async (req: Request, res: Response) => {
+  const { codeType, month, date } = req.query;
+  
+  let query: any = {};
+
+  if (codeType === 'ppmvCode') query.ppmvCode = true;
+  if (codeType === 'facilityCode') query.facilityCode = true;
+  if (codeType === 'facilityProviderCode') query.facilityProviderCode = true;
+  if (codeType === 'month') query.month = month;
+  if (codeType === 'date') query.date = date;
+
+  try {
+    // Aggregate screenings grouped by unique ppmvCode for the current month
+    const result: any = await aggregateScreenings(query);
+    return returnMsg(res, result, "Data retrieved");
+  } catch (error: any) {
+    console.error(error);
+    throw new BadRequestError(error?.message);
+  }
+}
+
+
 
 // Claim Incentive
 export const claimIncentive = async (req: Request, res: Response) => {

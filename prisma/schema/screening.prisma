@@ -1,31 +1,38 @@
 model Screening {
-  id                     Int               @id @default(autoincrement())
-  phoneNumber            String            @unique @db.VarChar(15)
-  age                    Int
-  gender                 Gender
-  verificationCode       String            @db.VarChar(10)
-  confirmationCode       String?           @db.VarChar(10)
-  confirmationResult     ScreeningResult   @default(pending)
-  screeningResult        ScreeningResult   @default(pending)
-  clientRewardStatus     Boolean           @default(false)
-  ppmvRewardStatus       Boolean           @default(false)
-  ppmvPhoneNumber        String
-  state                  String            @db.VarChar(20) //added for the sake of data analysis
-  lga                    String            @db.VarChar(30) //added for the sake of data analysis
-  location               String            @unique @db.VarChar(30) //added for the sake of data analysis
-  ppmvAgent              PpmvAgent         @relation(fields: [ppmvPhoneNumber], references: [phoneNumber])
-  facilityProviderNumber String?
-  facilityProvider       FacilityProvider? @relation(fields: [facilityProviderNumber], references: [phoneNumber])
-  facilityCode           String?
-  facility               Facility?         @relation(fields: [facilityCode], references: [code])
-  transactions           Reward[]
-  createdAt              DateTime          @default(now())
-  updatedAt              DateTime          @updatedAt
+  id          Int    @id @default(autoincrement())
+  phoneNumber String @unique @db.VarChar(15)
+  age         Int
+  gender      Gender
+  state       String @db.VarChar(20) //added for the sake of data analysis
+  lga         String @db.VarChar(30) //added for the sake of data analysis
+  location    String @db.VarChar(30) //added for the sake of data analysis
+
+  verificationCode String  @db.VarChar(10)
+  confirmationCode String? @db.VarChar(10)
+
+  confirmationResult ScreeningResult @default(pending)
+  screeningResult    ScreeningResult @default(pending)
+  isDiagnosed        Boolean        @default(false)
+
+  clientRewardStatus    Boolean @default(false)
+  screeningRewardStatus Boolean @default(false)
+  referrerRewardStatus  Boolean @default(false)
+  elevatedRewardStatus  Boolean @default(false)
+
+  ppmvCode             String
+  facilityProviderCode String?
+  facilityCode         String?
+
+  reward    Reward[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  PpmvAgent PpmvAgent[]
 }
 
 enum ScreeningResult {
-  negative
-  positive
+  negative // not elevated
+  positive // elevated
   pending
 }
 

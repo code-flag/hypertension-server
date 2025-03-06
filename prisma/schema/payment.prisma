@@ -1,11 +1,11 @@
 model Payment {
-  id   Int           @id @default(autoincrement())
+  id   String           @id @default(uuid())
   state String
-  ppmvNumber String
-  ppmvAgent     PpmvAgent[]
+  ppmvCode String?
+  ppmvAgent               PpmvAgent?         @relation(fields: [ppmvCode], references: [ppmvCode])
   status        EStatus @default(pending)
   amount Int
-  authorizationLevel Int
+  authorizationLevel Int @default(0)
   authorizedBy Json[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
@@ -13,6 +13,7 @@ model Payment {
 
 enum EStatus {
   pending
-  paid
+  approved
+  processing
   declined
 }

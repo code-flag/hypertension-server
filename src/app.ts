@@ -51,7 +51,7 @@ app.use(router);
 app.get("/", (request: any, response: any) => {
   response.status(200).json({
     status: "success",
-    message: "Welcome to PSI project",
+    message: "Welcome Testing to PSI project",
     data: {
       service: "PSI project",
       version: "2.0.0",

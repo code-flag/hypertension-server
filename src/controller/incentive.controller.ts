@@ -2,45 +2,6 @@ import { Request, Response } from "express";
 import { prisma } from "../config/database";
 import { returnMsg } from "../helper/message-handler";
 
-// Get all incentives with pagination
-export const getAllIncentives = async (req: Request, res: Response) => {
-  try {
-    const { limit = 10, offset = 0, type, beneficiaryType } = req.query;
-
-    const query: any = {};
-    if (type) {
-      query['type'] = type;
-    }
-    if (beneficiaryType) {
-      query['beneficiaryType'] = beneficiaryType;
-    }
-
-    const matchQuery = Object.keys(query).length > 0 ? { where: query } : {};
-
-    const incentives = await prisma.incentives.findMany({
-      ...matchQuery,
-      take: Number(limit),
-      skip: Number(offset),
-      orderBy: {
-        id: 'asc',
-      },
-    });
-
-    const totalIncentives = await prisma.incentives.count({
-      where: query,
-    });
-
-    returnMsg(res, {
-      data: incentives,
-      total: totalIncentives,
-      totalPages: Math.ceil(totalIncentives / Number(limit)),
-      currentPage: Math.ceil(Number(offset) / Number(limit)) + 1,
-    }, "Incentives retrieved successfully.");
-  } catch (error) {
-    console.error("Error fetching incentives:", error);
-    res.status(500).json({ message: "An error occurred while fetching incentives." });
-  }
-};
 
 // Create a new incentive
 export const createIncentive = async (req: Request, res: Response) => {
@@ -88,6 +49,37 @@ export const updateIncentive = async (req: Request, res: Response) => {
   }
 };
 
+// Get all incentives with pagination
+export const getAllIncentives = async (req: Request, res: Response) => {
+  try {
+    const { limit = 10, offset = 0, type, beneficiaryType } = req.query;
+
+    const query: any = {};
+    if (type) {
+      query['type'] = type;
+    }
+    if (beneficiaryType) {
+      query['beneficiaryType'] = beneficiaryType;
+    }
+
+    const matchQuery = Object.keys(query).length > 0 ? query : {};
+
+    const incentives = await prisma.incentives.findMany( matchQuery,{
+      limit: Number(limit),
+      offset: Number(offset),
+      sort: {
+        id: 'asc',
+      },
+    });
+
+    returnMsg(res, incentives, "Incentives retrieved successfully.");
+  } catch (error) {
+    console.error("Error fetching incentives:", error);
+    res.status(500).json({ message: "An error occurred while fetching incentives." });
+  }
+};
+
+
 // Delete an incentive
 export const deleteIncentive = async (req: Request, res: Response) => {
   try {
@@ -104,15 +96,12 @@ export const deleteIncentive = async (req: Request, res: Response) => {
   }
 };
 
-
-
 export enum EIncentiveType {
     full = 'full',
     limited = 'limited',
     screeningIncentive = 'screeningIncentive',
     clientIncentive = 'clientIncentive'
 }
-
 export class RewardService{
     async clientReward(clientNumber: string) {
         const client = await prisma.screening.findUnique({
@@ -128,35 +117,130 @@ export class RewardService{
         return true;
     }
 
-    async screeningReward(ppmvNumber: string){
+    async screeningReward(ppmvCode: string){
         const ppmv = await prisma.ppmvAgent.findUnique({
             where: {
-                phoneNumber: ppmvNumber
+                ppmvCode: ppmvCode
             }
         })
+
         if(!ppmv) return false;
-        const reward: number = await this.getIncentive(EIncentiveType["screeningIncentive"])
+
+        let reward: any;
+        try {
+          reward = await this.getIncentive(EIncentiveType["screeningIncentive"])
+
+        } catch (error) {
+          console.log("error incent", error);
+        }
         if (!reward) return false
 
-        const newBalance = ppmv.activeIncentiveBalance + reward;
+        const newBalance: number = Number(ppmv?.activeIncentiveBalance) + Number(reward?.amount);
 
-        const isUpdatePpmvBalance = await prisma.ppmvAgent.update({
-            where: {
-                phoneNumber: ppmvNumber
-            },
-            data: {
-                activeIncentiveBalance: newBalance
-            }
-        })
+        let isUpdatePpmvBalance: any;
+    try {
+       isUpdatePpmvBalance = await prisma.ppmvAgent.update({
+        where: {
+            ppmvCode: ppmvCode
+        },
+        data: {
+            activeIncentiveBalance: newBalance
+        }
+    })
+    } catch (error) {
+      console.log("errpr ", error)
+    }
+
+        console.log("after update")
         if (!isUpdatePpmvBalance) return false 
 
         // update screening 
         return true;
     }
 
-    screeningConfirmationReward(ppmvNumber: string){
 
-    }
+
+    async elevatedScreeningReward(ppmvCode: string){
+      const ppmv = await prisma.ppmvAgent.findUnique({
+          where: {
+              ppmvCode: ppmvCode
+          }
+      })
+
+      if(!ppmv) return false;
+
+      let reward: any;
+      try {
+        reward = await this.getIncentive(EIncentiveType["full"])
+
+      } catch (error) {
+        console.log("error incent", error);
+      }
+      if (!reward) return false
+
+      const newBalance: number = Number(ppmv?.activeIncentiveBalance) + Number(reward?.amount);
+
+      let isUpdatePpmvBalance: any;
+  try {
+     isUpdatePpmvBalance = await prisma.ppmvAgent.update({
+      where: {
+          ppmvCode: ppmvCode
+      },
+      data: {
+          activeIncentiveBalance: newBalance
+      }
+  })
+  } catch (error) {
+    console.log("errpr ", error)
+  }
+
+      console.log("after update")
+      if (!isUpdatePpmvBalance) return false 
+
+      // update screening 
+      return true;
+  }
+
+    async refererReward(ppmvCode: string){
+      const ppmv = await prisma.ppmvAgent.findUnique({
+          where: {
+              ppmvCode: ppmvCode
+          }
+      })
+
+      if(!ppmv) return false;
+
+      let reward: any;
+      try {
+        reward = await this.getIncentive(EIncentiveType["limited"])
+
+      } catch (error) {
+        console.log("error incent", error);
+      }
+      if (!reward) return false
+
+      const newBalance: number = Number(ppmv?.activeIncentiveBalance) + Number(reward?.amount);
+
+      let isUpdatePpmvBalance: any;
+  try {
+     isUpdatePpmvBalance = await prisma.ppmvAgent.update({
+      where: {
+          ppmvCode: ppmvCode
+      },
+      data: {
+          activeIncentiveBalance: newBalance
+      }
+  })
+  } catch (error) {
+    console.log("errpr ", error)
+  }
+
+      console.log("after update")
+      if (!isUpdatePpmvBalance) return false 
+
+      // update screening 
+      return true;
+  }
 
     async airtimeReward(phoneNUmber: string){
         console.log("send airtime to client phone number", phoneNUmber);
@@ -164,7 +248,7 @@ export class RewardService{
     }
 
     async getIncentive(incentiveType: EIncentiveType){
-        return await prisma.incentive.findUnique({
+        return await prisma.incentives.findFirst({
             where:{
                 incentiveType: incentiveType
             }

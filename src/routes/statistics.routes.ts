@@ -1,10 +1,10 @@
 import { Router } from "express";
 import asyncWrapper from "../middleware/asyncWrapper";
-import { dashboardStats } from "../controller/statistics.controller";
+import { getDashboardData } from "../controller/statistics.controller";
 
 
 const StatisticsRouter: any = Router();
 
-StatisticsRouter.get("/total-count", asyncWrapper(dashboardStats));
+StatisticsRouter.get("/total-count", asyncWrapper(getDashboardData));
 
 export default StatisticsRouter;

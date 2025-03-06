@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 
  const prismaObject = new PrismaClient();
  // create pagination object for all models
- const pagination = new PrismaPagination(['staff', 'ppmvAgent'], prismaObject).init();
+ const pagination = new PrismaPagination(['screening', 'ppmvAgent', 'incentive', 'ussdCode', 'transaction', 'payment'], prismaObject).init();
  
 //  pagination.result();
 // set prisma variable for global usage

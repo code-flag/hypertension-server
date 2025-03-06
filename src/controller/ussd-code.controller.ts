@@ -12,27 +12,19 @@ export const getAllUssdCodes = async (req: Request, res: Response) => {
       query['code'] = code;
     }
 
-    const matchQuery = Object.keys(query).length > 0 ? { where: query } : {};
+    const matchQuery = Object.keys(query).length > 0 ? query : {};
 
-    const ussdCodes = await prisma.ussdCode.findMany({
-      ...matchQuery,
-      take: Number(limit),
-      skip: Number(offset),
-      orderBy: {
+    const ussdCodes = await prisma.ussdCode.paginate(
+      matchQuery,
+      {
+      limit: Number(limit),
+      offset: Number(offset),
+      sort: {
         id: 'asc',
       },
     });
 
-    const totalUssdCodes = await prisma.ussdCode.count({
-      where: query,
-    });
-
-    returnMsg(res, {
-      data: ussdCodes,
-      total: totalUssdCodes,
-      totalPages: Math.ceil(totalUssdCodes / Number(limit)),
-      currentPage: Math.ceil(Number(offset) / Number(limit)) + 1,
-    }, "USSD codes retrieved successfully.");
+    returnMsg(res, ussdCodes, "USSD codes retrieved successfully.");
   } catch (error) {
     console.error("Error fetching USSD codes:", error);
     res.status(500).json({ message: "An error occurred while fetching USSD codes." });
@@ -42,12 +34,13 @@ export const getAllUssdCodes = async (req: Request, res: Response) => {
 // Create a new USSD code
 export const createUssdCode = async (req: Request, res: Response) => {
   try {
-    const { code, description } = req.body;
+    const { code, desc, target } = req.body;
 
     const newUssdCode = await prisma.ussdCode.create({
       data: {
         code,
-        description,
+        desc,
+        target
       },
     });
 
@@ -62,14 +55,11 @@ export const createUssdCode = async (req: Request, res: Response) => {
 export const updateUssdCode = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { code, description } = req.body;
+    const { code, desc } = req.body;
 
     const updatedUssdCode = await prisma.ussdCode.update({
       where: { id: Number(id) },
-      data: {
-        code,
-        description,
-      },
+      data:req.body,
     });
 
     returnMsg(res, updatedUssdCode, "USSD code updated successfully.");
